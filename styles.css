@@ -33,3 +33,18 @@ body[data-theme="royal-purple"] .brand-logo{background:#7138b5}
 .purple-swatch{background:linear-gradient(90deg,#fff 0 45%,#7138b5 45% 75%,#eee3ff 75%)}
 body[data-theme="matte-black"] .theme-choice{background:#1c1c1c;color:#fff}
 @media(max-width:700px){.theme-grid{grid-template-columns:1fr}}
+
+body[data-theme="black-ocean"]{background:#101418;color:#fff}
+body[data-theme="black-ocean"] .topbar,body[data-theme="black-ocean"] .panel,body[data-theme="black-ocean"] .post-card,body[data-theme="black-ocean"] .auth-card,body[data-theme="black-ocean"] .message-friend{background:#1b2229;color:#fff}
+body[data-theme="black-ocean"] .nav-link{color:#f4f7fa}
+body[data-theme="black-ocean"] .nav-link.selected{background:#183c59;color:#55b8f2}
+body[data-theme="black-ocean"] .primary,body[data-theme="black-ocean"] .small-btn.accept{background:#168bd2;color:#fff}
+body[data-theme="black-ocean"] .primary:hover{background:#0875b9}
+body[data-theme="black-ocean"] .brand,body[data-theme="black-ocean"] .auth-intro h1,body[data-theme="black-ocean"] .link-btn{color:#55b8f2}
+body[data-theme="black-ocean"] .brand-logo{background:#168bd2;color:#fff}
+body[data-theme="black-ocean"] .icon-btn,body[data-theme="black-ocean"] .logout{background:#263541;color:#fff}
+body[data-theme="black-ocean"] input,body[data-theme="black-ocean"] textarea,body[data-theme="black-ocean"] select,body[data-theme="black-ocean"] .composer-line textarea,body[data-theme="black-ocean"] .comment,body[data-theme="black-ocean"] .comment-form input,body[data-theme="black-ocean"] .search-wrap{background:#27313a;color:#fff;border-color:#45535f}
+body[data-theme="black-ocean"] .message-friend:hover{background:#2b3945}
+body[data-theme="black-ocean"] .post-actions button{color:#d9e5ed}
+body[data-theme="black-ocean"] .theme-choice{background:#1b2229;color:#fff}
+.black-ocean-swatch{background:linear-gradient(90deg,#111820 0 48%,#168bd2 48% 76%,#fff 76%)}
