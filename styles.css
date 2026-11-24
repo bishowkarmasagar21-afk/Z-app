@@ -65,3 +65,10 @@ body[data-theme="black-ocean"] .theme-choice{background:#1b2229;color:#fff}
  .top-actions .icon-btn{width:34px;height:34px;font-size:19px}
  .top-actions .logout{white-space:nowrap;padding:8px 9px}
 }
+
+/* Mobile sidebar navigation: icons only */
+@media(max-width:700px){
+  .left-sidebar nav{display:flex;justify-content:space-around;gap:4px;overflow:visible}
+  .left-sidebar .nav-link{flex:1;min-width:0;height:48px;padding:8px 2px;font-size:23px;gap:0}
+  .left-sidebar .nav-link span{display:none!important}
+}
