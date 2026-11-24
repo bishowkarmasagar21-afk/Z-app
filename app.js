@@ -118,7 +118,7 @@
     if(view==="feed")loadFeed();
   }
   async function logout(){await db.auth.signOut();user=null;profile=null;showScreen(false);setAuthMode(false);}
-  $("switchAuth").addEventListener("click",()=>setAuthMode(!$("signupForm").classList.contains("hidden")));
+  $("switchAuth").addEventListener("click",()=>setAuthMode($("signupForm").classList.contains("hidden")));
   $("loginForm").addEventListener("submit",handleLogin);
   $("signupForm").addEventListener("submit",handleSignup);
   $("publishBtn").addEventListener("click",publishPost);
