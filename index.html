@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#081426">
+  <meta name="description" content="Z'app — your space, your people.">
+  <title>Z'app — Your social space</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Z'app home"><span class="brand-mark">Z</span><span>Z'app</span></a>
+    <div class="top-actions"><span id="topUser" class="top-user"></span><button id="logoutBtn" class="button button-quiet hidden">Log out</button></div>
+  </header>
+
+  <main>
+    <section id="authScreen" class="auth-layout">
+      <div class="intro">
+        <div class="eyebrow"><span class="live-dot"></span> A new space to connect</div>
+        <h1>Your people.<br><span>Your space.</span></h1>
+        <p>Share what matters, find your community, and connect on your terms.</p>
+        <div class="intro-points"><span>✦ Real conversations</span><span>✦ Your privacy matters</span><span>✦ Built for everyone</span></div>
+      </div>
+      <div class="glass auth-card">
+        <div class="auth-heading"><div class="mini-mark">Z</div><h2 id="authHeading">Welcome to Z'app</h2><p id="authSubheading">Sign in to continue to your space.</p></div>
+        <form id="loginForm" class="auth-form">
+          <label>Email address<input id="loginEmail" type="email" autocomplete="email" placeholder="you@example.com" required></label>
+          <label>Password<input id="loginPassword" type="password" autocomplete="current-password" placeholder="Your password" required minlength="6"></label>
+          <button class="button button-primary full" type="submit">Sign in</button>
+        </form>
+        <form id="signupForm" class="auth-form hidden">
+          <label>Your name<input id="signupName" type="text" maxlength="50" placeholder="How should we call you?" required></label>
+          <label>Email address<input id="signupEmail" type="email" autocomplete="email" placeholder="you@example.com" required></label>
+          <label>Password<input id="signupPassword" type="password" autocomplete="new-password" minlength="6" placeholder="At least 6 characters" required></label>
+          <button class="button button-primary full" type="submit">Create account</button>
+        </form>
+        <p id="authMessage" class="notice" role="status"></p>
+        <p class="switch-auth"><span id="switchText">New to Z'app?</span> <button id="switchAuth" class="text-button" type="button">Create an account</button></p>
+      </div>
+    </section>
+
+    <section id="appScreen" class="app-layout hidden">
+      <aside class="sidebar glass">
+        <div class="profile-mini"><div id="myAvatar" class="avatar">Z</div><div><strong id="myName">Member</strong><small id="myHandle">@member</small></div></div>
+        <nav class="side-nav" aria-label="Main navigation">
+          <button class="nav-item active" data-view="feed">⌂ <span>Home feed</span></button>
+          <button class="nav-item" data-view="profile">◎ <span>My profile</span></button>
+        </nav>
+        <div class="sidebar-bottom"><p class="tiny-note">Your space. Your people. Your voice.</p><button id="sideLogout" class="nav-item logout-link">↪ <span>Log out</span></button></div>
+      </aside>
+
+      <section class="main-column">
+        <div id="feedView" class="view">
+          <div class="page-heading"><div><div class="eyebrow">YOUR COMMUNITY</div><h1>Home feed</h1><p>See what's happening around you.</p></div><button id="refreshBtn" class="button button-quiet">↻ Refresh</button></div>
+          <section class="glass composer">
+            <div class="composer-top"><div id="composerAvatar" class="avatar small">Z</div><span>What's on your mind?</span></div>
+            <textarea id="postText" maxlength="5000" placeholder="Share a thought, a moment, or something you love..." rows="3"></textarea>
+            <div class="composer-bottom"><label class="audience-label">Who can see this? <select id="postAudience"><option value="public">Everyone</option><option value="followers">Followers</option><option value="private">Only me</option></select></label><button id="publishBtn" class="button button-primary">Publish post</button></div>
+            <p id="postMessage" class="notice" role="status"></p>
+          </section>
+          <div class="feed-title"><h2>Latest posts</h2><span>Fresh from your community</span></div>
+          <div id="feedList" class="feed-list"><div class="loading glass">Loading your feed…</div></div>
+        </div>
+        <div id="profileView" class="view hidden">
+          <div class="page-heading"><div><div class="eyebrow">YOUR CORNER</div><h1>My profile</h1><p>Make this space feel like you.</p></div></div>
+          <section class="glass profile-editor">
+            <div class="profile-banner"><div id="profileAvatar" class="avatar profile-avatar">Z</div></div>
+            <form id="profileForm" class="profile-form">
+              <label>Display name<input id="profileName" maxlength="50" required></label>
+              <label>Username<input id="profileUsername" maxlength="24" placeholder="yourname" required></label>
+              <label>Bio<textarea id="profileBio" maxlength="240" rows="3" placeholder="A little about you…"></textarea></label>
+              <label>Profile visibility<select id="profileVisibility"><option value="public">Public</option><option value="followers">Followers only</option><option value="private">Private</option></select></label>
+              <button class="button button-primary" type="submit">Save profile</button><p id="profileMessage" class="notice" role="status"></p>
+            </form>
+          </section>
+        </div>
+      </section>
+      <aside class="right-rail"><section class="glass welcome-card"><div class="mini-mark">Z</div><h3>Welcome to Z'app</h3><p>A social space that belongs to you. Be kind, be curious, be yourself.</p></section><p class="footer-note">Z'app · Made for connection</p></aside>
+    </section>
+  </main>
+  <div id="toast" class="toast" role="status"></div>
+</body>
+</html>
