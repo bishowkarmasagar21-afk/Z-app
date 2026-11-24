@@ -2,6 +2,12 @@
   const SUPABASE_URL = "https://dbtawhhuctckhozwpqqc.supabase.co";
   const SUPABASE_KEY = "sb_publishable_vF8zzvdQVc8QBYC4lVy9vA__vvWTJrN";
   const $ = (id) => document.getElementById(id);
+  // Keep the sign-up switch responsive even if the Supabase library fails to load.
+  $("switchAuth").addEventListener("click", () => setAuthMode($("signupForm").classList.contains("hidden")));
+  if (!window.supabase?.createClient) {
+    $("authMessage").textContent = "The sign-in service could not load. Please refresh the page and try again.";
+    return;
+  }
   const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   let user = null, profile = null, activeView = "feed";
   const esc = (value) => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -62,12 +68,21 @@
     catch(e){ toast(e.message || "Could not load your account."); }
   }
   async function handleSignup(e) {
-    e.preventDefault(); notice("authMessage","Creating your account…");
-    const display_name=$("signupName").value.trim();
-    const {data,error}=await db.auth.signUp({email:$("signupEmail").value.trim(),password:$("signupPassword").value,options:{data:{display_name}}});
-    if(error){notice("authMessage",error.message);return;}
-    if(data.session){user=data.user;await loadApp();}
-    else notice("authMessage","Account created. Check your email if confirmation is enabled, then sign in.",true);
+    e.preventDefault();
+    notice("authMessage","Creating your account…");
+    const submitButton = $("signupForm").querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    try {
+      const display_name=$("signupName").value.trim();
+      const {data,error}=await db.auth.signUp({email:$("signupEmail").value.trim(),password:$("signupPassword").value,options:{data:{display_name}}});
+      if(error){notice("authMessage",error.message);return;}
+      if(data.session){user=data.user;await loadApp();}
+      else notice("authMessage","Account created. Check your email if confirmation is enabled, then sign in.",true);
+    } catch (error) {
+      notice("authMessage",error?.message || "Something went wrong. Please try again.");
+    } finally {
+      submitButton.disabled = false;
+    }
   }
   async function handleLogin(e) {
     e.preventDefault(); notice("authMessage","Signing in…");
@@ -118,7 +133,6 @@
     if(view==="feed")loadFeed();
   }
   async function logout(){await db.auth.signOut();user=null;profile=null;showScreen(false);setAuthMode(false);}
-  $("switchAuth").addEventListener("click",()=>setAuthMode($("signupForm").classList.contains("hidden")));
   $("loginForm").addEventListener("submit",handleLogin);
   $("signupForm").addEventListener("submit",handleSignup);
   $("publishBtn").addEventListener("click",publishPost);
