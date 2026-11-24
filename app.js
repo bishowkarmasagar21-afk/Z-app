@@ -55,7 +55,7 @@
  if(peopleError){box.textContent=peopleError.message;return;}
  box.innerHTML=(people||[]).map(p=>'<button class="message-friend" data-open-friend="'+p.id+'"><span class="avatar">'+esc(initial(p.display_name))+'</span><span><b>'+esc(p.display_name||"Member")+'</b><small>@'+esc(p.username||"member")+'</small></span></button>').join("");
 }
-async function navigate(view){document.querySelectorAll(".view").forEach(v=>v.classList.add("hidden"));$(view+"View").classList.remove("hidden");document.querySelectorAll("[data-nav]").forEach(b=>b.classList.toggle("selected",b.dataset.nav===view));if(view==="home")await loadFeed();if(view==="friends")await loadFriends();if(view==="messages")await loadMessageFriends();if(view==="notifications")await loadNotifications();if(view==="profile")await loadFeed("myPosts",true);}
+async function navigate(view){document.querySelectorAll(".view").forEach(v=>v.classList.add("hidden"));$(view+"View").classList.remove("hidden");document.querySelectorAll("[data-nav]").forEach(b=>b.classList.toggle("selected",b.dataset.nav===view));if(view==="home")await loadFeed();if(view==="friends")await loadFriends();if(view==="messages")await loadMessageFriends();if(view==="notifications")await loadNotifications();if(view==="profile")await loadFeed("myPosts",true);if(view==="settings")applyTheme(document.body.dataset.theme);}
   async function logout(){await db.auth.signOut();user=null;profile=null;chatUser=null;screen(false);setAuthMode(false);}
   $("switchAuth").addEventListener("click",()=>setAuthMode($("signupForm").classList.contains("hidden")));
   if(!window.supabase?.createClient){msg("authMessage","Sign-in service could not load. Refresh the page.");return;}
