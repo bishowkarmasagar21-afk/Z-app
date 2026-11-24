@@ -55,6 +55,10 @@
  if(peopleError){box.textContent=peopleError.message;return;}
  box.innerHTML=(people||[]).map(p=>'<button class="message-friend" data-open-friend="'+p.id+'"><span class="avatar">'+esc(initial(p.display_name))+'</span><span><b>'+esc(p.display_name||"Member")+'</b><small>@'+esc(p.username||"member")+'</small></span></button>').join("");
 }
+const THEMES=["matte-black","white-orange","ocean-blue","royal-purple","black-ocean"];
+function applyTheme(name){const theme=THEMES.includes(name)?name:"white-orange";document.body.dataset.theme=theme;try{localStorage.setItem("zapp-theme",theme);}catch(_){}document.querySelectorAll("[data-theme-choice]").forEach(b=>b.classList.toggle("active",b.dataset.themeChoice===theme));}
+applyTheme((()=>{try{return localStorage.getItem("zapp-theme")||"white-orange";}catch(_){return "white-orange";}})());
+document.querySelectorAll("[data-theme-choice]").forEach(b=>b.addEventListener("click",()=>{applyTheme(b.dataset.themeChoice);msg("themeMessage","Theme saved on this device.",true);}));
 async function navigate(view){document.querySelectorAll(".view").forEach(v=>v.classList.add("hidden"));$(view+"View").classList.remove("hidden");document.querySelectorAll("[data-nav]").forEach(b=>b.classList.toggle("selected",b.dataset.nav===view));if(view==="home")await loadFeed();if(view==="friends")await loadFriends();if(view==="messages")await loadMessageFriends();if(view==="notifications")await loadNotifications();if(view==="profile")await loadFeed("myPosts",true);if(view==="settings")applyTheme(document.body.dataset.theme);}
   async function logout(){await db.auth.signOut();user=null;profile=null;chatUser=null;screen(false);setAuthMode(false);}
   $("switchAuth").addEventListener("click",()=>setAuthMode($("signupForm").classList.contains("hidden")));
