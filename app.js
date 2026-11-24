@@ -2,7 +2,7 @@
   const SUPABASE_URL="https://dbtawhhuctckhozwpqqc.supabase.co";
   const SUPABASE_KEY="sb_publishable_vF8zzvdQVc8QBYC4lVy9vA__vvWTJrN";
   const $=id=>document.getElementById(id);
-  let db,user,profile,chatUser=null,selectedImage=null;
+  let db,user,profile,chatUser=null,selectedImage=null,recoveringPassword=false;
   const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const initial=v=>(String(v||"Z").trim()[0]||"Z").toUpperCase();
   const msg=(id,text,good=false)=>{const e=$(id);if(!e)return;e.textContent=text||"";e.classList.toggle("success",good);};
