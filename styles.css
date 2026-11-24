@@ -98,3 +98,11 @@ body[data-theme="black-ocean"] .more-nav-menu .nav-link:hover{background:#2b3945
 body[data-theme="matte-black"] .more-nav-menu{background:#1c1c1c;border-color:#444;color:#f5f5f5}
 body[data-theme="matte-black"] .more-nav-menu .nav-link{color:#eee}
 body[data-theme="matte-black"] .more-nav-menu .nav-link:hover{background:#333}
+
+/* Ensure every More-menu item and label is visible on mobile */
+@media(max-width:700px){
+ .left-sidebar .more-nav-menu:not(.hidden){display:grid!important}
+ .left-sidebar .more-nav-menu .nav-link{display:flex!important;flex:initial!important;width:100%!important;height:auto!important;min-height:44px!important;justify-content:flex-start!important;padding:10px 12px!important;gap:10px!important;font-size:15px!important}
+ .left-sidebar .more-nav-menu .nav-link span{display:inline!important;font-size:14px!important}
+}
+.more-nav-menu .logout.hidden{display:none!important}
