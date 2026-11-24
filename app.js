@@ -1,146 +1,66 @@
 (() => {
-  const SUPABASE_URL = "https://dbtawhhuctckhozwpqqc.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_vF8zzvdQVc8QBYC4lVy9vA__vvWTJrN";
-  const $ = (id) => document.getElementById(id);
-  // Keep the sign-up switch responsive even if the Supabase library fails to load.
-  $("switchAuth").addEventListener("click", () => setAuthMode($("signupForm").classList.contains("hidden")));
-  if (!window.supabase?.createClient) {
-    $("authMessage").textContent = "The sign-in service could not load. Please refresh the page and try again.";
-    return;
-  }
-  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  let user = null, profile = null, activeView = "feed";
-  const esc = (value) => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  const initials = (name) => (String(name || "Z").trim().charAt(0) || "Z").toUpperCase();
-  const notice = (id, text, good=false) => { const el=$(id); el.textContent=text || ""; el.classList.toggle("success",!!good); };
-  const toast = (text) => { $("toast").textContent=text; $("toast").classList.add("show"); setTimeout(()=>$("toast").classList.remove("show"),2600); };
-  function setAuthMode(signup) {
-    $("loginForm").classList.toggle("hidden",signup);
-    $("signupForm").classList.toggle("hidden",!signup);
-    $("authHeading").textContent=signup?"Join Z'app":"Welcome to Z'app";
-    $("authSubheading").textContent=signup?"Create your account and find your people.":"Sign in to continue to your space.";
-    $("switchText").textContent=signup?"Already a member?":"New to Z'app?";
-    $("switchAuth").textContent=signup?"Sign in":"Create an account";
-    notice("authMessage","");
-  }
-  function showScreen(signedIn) {
-    $("authScreen").classList.toggle("hidden",signedIn);
-    $("appScreen").classList.toggle("hidden",!signedIn);
-    $("logoutBtn").classList.toggle("hidden",!signedIn);
-    $("topUser").textContent=signedIn?(profile?.display_name || user?.email || ""):"";
-  }
-  async function loadProfile() {
-    const {data,error}=await db.from("profiles").select("*").eq("id",user.id).maybeSingle();
-    if(error) throw error;
-    profile=data || {id:user.id,display_name:user.user_metadata?.display_name || "Member",username:"member",bio:"",profile_visibility:"public"};
-    const name=profile.display_name || "Member", handle="@"+(profile.username || "member");
-    $("myName").textContent=name; $("myHandle").textContent=handle;
-    $("myAvatar").textContent=initials(name); $("composerAvatar").textContent=initials(name);
-    $("topUser").textContent=name;
-    $("profileName").value=name; $("profileUsername").value=profile.username || "";
-    $("profileBio").value=profile.bio || ""; $("profileVisibility").value=profile.profile_visibility || "public";
-    $("profileAvatar").textContent=initials(name);
-  }
-  async function loadFeed() {
-    $("feedList").innerHTML='<div class="loading glass">Loading posts…</div>';
-    const {data:posts,error}=await db.from("posts").select("id,author_id,body,audience,created_at").order("created_at",{ascending:false}).limit(50);
-    if(error) { $("feedList").textContent="Could not load posts: "+error.message; return; }
-    if(!posts?.length) { $("feedList").innerHTML='<div class="empty-state glass">No posts yet. Be the first to share something.</div>'; return; }
-    const ids=[...new Set(posts.map(p=>p.author_id))];
-    const {data:people}=await db.from("profiles").select("id,display_name,username").in("id",ids);
-    const peopleById=Object.fromEntries((people||[]).map(p=>[p.id,p]));
-    const {data:likes}=await db.from("post_likes").select("post_id,user_id").in("post_id",posts.map(p=>p.id));
-    const {data:comments}=await db.from("comments").select("id,post_id,author_id,body,created_at").in("post_id",posts.map(p=>p.id)).order("created_at",{ascending:true});
-    const commentAuthors=[...new Set((comments||[]).map(c=>c.author_id))];
-    let commentPeople={};
-    if(commentAuthors.length){const r=await db.from("profiles").select("id,display_name,username").in("id",commentAuthors);commentPeople=Object.fromEntries((r.data||[]).map(p=>[p.id,p]));}
-    $("feedList").innerHTML=posts.map(p=>{
-      const person=peopleById[p.author_id]||{}, name=person.display_name||"Z'app member";
-      const postLikes=(likes||[]).filter(l=>l.post_id===p.id), liked=postLikes.some(l=>l.user_id===user.id);
-      const postComments=(comments||[]).filter(c=>c.post_id===p.id);
-      const commentHtml=postComments.map(c=>'<div class="comment"><strong>'+esc(commentPeople[c.author_id]?.display_name||"Member")+'</strong>'+esc(c.body)+'</div>').join("");
-      return '<article class="post-card glass" data-post="'+p.id+'"><div class="post-author"><div class="avatar">'+esc(initials(name))+'</div><div><strong>'+esc(name)+'</strong><small>@'+esc(person.username||"member")+' · '+esc(new Date(p.created_at).toLocaleString())+'</small></div></div><div class="post-body">'+esc(p.body)+'</div><div class="post-actions"><button class="action-btn '+(liked?"liked":"")+'" data-action="like" data-id="'+p.id+'">'+(liked?"♥":"♡")+' '+postLikes.length+' Likes</button><button class="action-btn" data-action="comments" data-id="'+p.id+'">▤ '+postComments.length+' Comments</button></div><div class="comments hidden" id="comments-'+p.id+'">'+(commentHtml||'<div class="comment">No comments yet.</div>')+'<form class="comment-form" data-comment="'+p.id+'"><input name="body" maxlength="2000" placeholder="Write a comment…" required><button type="submit">Send</button></form></div></article>';
+  const SUPABASE_URL="https://dbtawhhuctckhozwpqqc.supabase.co";
+  const SUPABASE_KEY="sb_publishable_vF8zzvdQVc8QBYC4lVy9vA__vvWTJrN";
+  const $=id=>document.getElementById(id);
+  let db,user,profile,chatUser=null,selectedImage=null;
+  const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const initial=v=>(String(v||"Z").trim()[0]||"Z").toUpperCase();
+  const msg=(id,text,good=false)=>{const e=$(id);if(!e)return;e.textContent=text||"";e.classList.toggle("success",good);};
+  const toast=t=>{const e=$("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),2500);};
+  function setAuthMode(signup){$("loginForm").classList.toggle("hidden",signup);$("signupForm").classList.toggle("hidden",!signup);$("authHeading").textContent=signup?"Create your Z'app account":"Log in to Z'app";$("authSub").textContent=signup?"Join the community and meet your people.":"Welcome back. Your community is waiting.";$("switchText").textContent=signup?"Already have an account?":"New to Z'app?";$("switchAuth").textContent=signup?"Log in":"Create an account";msg("authMessage","");}
+  function screen(on){$("authScreen").classList.toggle("hidden",on);$("appScreen").classList.toggle("hidden",!on);$("logoutBtn").classList.toggle("hidden",!on);}
+  function setIdentity(){const name=profile?.display_name||"Member";["sideAvatar","composerAvatar","profileAvatar"].forEach(id=>$(id).textContent=initial(name));$("sideName").textContent=name;$("profileDisplay").textContent=name;$("profileHandle").textContent="@"+(profile?.username||"member");$("profileName").value=name;$("profileUsername").value=profile?.username||"";$("profileBio").value=profile?.bio||"";$("profileVisibility").value=profile?.profile_visibility||"public";}
+  async function loadProfile(){const {data,error}=await db.from("profiles").select("*").eq("id",user.id).maybeSingle();if(error)throw error;profile=data||{id:user.id,display_name:user.user_metadata?.display_name||"Member",username:"member",bio:"",profile_visibility:"public"};setIdentity();}
+  async function loadFeed(target="feedList",own=false){
+    const el=$(target);el.innerHTML='<div class="panel empty">Loading posts…</div>';
+    let q=db.from("posts").select("id,author_id,body,audience,media_url,created_at").order("created_at",{ascending:false}).limit(50);
+    if(own)q=q.eq("author_id",user.id);
+    const {data:posts,error}=await q;if(error){el.textContent="Could not load posts: "+error.message;return;}
+    if(!posts?.length){el.innerHTML='<div class="panel empty">No posts here yet. Share the first moment.</div>';return;}
+    const ids=[...new Set(posts.map(p=>p.author_id))],postIds=posts.map(p=>p.id);
+    const [peopleR,likesR,commentsR]=await Promise.all([
+      db.from("profiles").select("id,display_name,username").in("id",ids),
+      db.from("post_likes").select("post_id,user_id").in("post_id",postIds),
+      db.from("comments").select("id,post_id,author_id,body,created_at").in("post_id",postIds).order("created_at")
+    ]);
+    const people=Object.fromEntries((peopleR.data||[]).map(p=>[p.id,p]));
+    const commentIds=[...new Set((commentsR.data||[]).map(c=>c.author_id))];
+    let commentPeople={};if(commentIds.length){const r=await db.from("profiles").select("id,display_name").in("id",commentIds);commentPeople=Object.fromEntries((r.data||[]).map(p=>[p.id,p]));}
+    el.innerHTML=posts.map(p=>{
+      const person=people[p.author_id]||{},name=person.display_name||"Z'app member",likes=(likesR.data||[]).filter(l=>l.post_id===p.id),liked=likes.some(l=>l.user_id===user.id),comments=(commentsR.data||[]).filter(c=>c.post_id===p.id);
+      const commentHtml=comments.map(c=>'<div class="comment"><b>'+esc(commentPeople[c.author_id]?.display_name||"Member")+'</b>'+esc(c.body)+'</div>').join("");
+      return '<article class="post-card" data-post="'+p.id+'"><div class="post-head"><div class="avatar">'+esc(initial(name))+'</div><div><b>'+esc(name)+'</b><small>@'+esc(person.username||"member")+' · '+esc(new Date(p.created_at).toLocaleString())+'</small></div></div><div class="post-body">'+esc(p.body)+'</div>'+(p.media_url?'<img class="post-media" src="'+esc(p.media_url)+'" alt="Post image">':"")+'<div class="post-stats">'+likes.length+' reactions · '+comments.length+' comments</div><div class="post-actions"><button data-action="like" data-id="'+p.id+'" class="'+(liked?"liked":"")+'">'+(liked?"♥ Liked":"♡ Like")+'</button><button data-action="comment" data-id="'+p.id+'">▤ Comment</button></div><div class="comment-list">'+commentHtml+'<form class="comment-form" data-comment="'+p.id+'"><input name="body" maxlength="2000" placeholder="Write a comment…" required><button class="small-btn">Send</button></form></div></article>';
     }).join("");
   }
-  async function loadApp() {
-    showScreen(true);
-    try { await loadProfile(); await loadFeed(); }
-    catch(e){ toast(e.message || "Could not load your account."); }
-  }
-  async function handleSignup(e) {
-    e.preventDefault();
-    notice("authMessage","Creating your account…");
-    const submitButton = $("signupForm").querySelector('button[type="submit"]');
-    submitButton.disabled = true;
-    try {
-      const display_name=$("signupName").value.trim();
-      const {data,error}=await db.auth.signUp({email:$("signupEmail").value.trim(),password:$("signupPassword").value,options:{data:{display_name}}});
-      if(error){notice("authMessage",error.message);return;}
-      if(data.session){user=data.user;await loadApp();}
-      else notice("authMessage","Account created. Check your email if confirmation is enabled, then sign in.",true);
-    } catch (error) {
-      notice("authMessage",error?.message || "Something went wrong. Please try again.");
-    } finally {
-      submitButton.disabled = false;
-    }
-  }
-  async function handleLogin(e) {
-    e.preventDefault(); notice("authMessage","Signing in…");
-    const {data,error}=await db.auth.signInWithPassword({email:$("loginEmail").value.trim(),password:$("loginPassword").value});
-    if(error){notice("authMessage",error.message);return;}
-    user=data.user; await loadApp();
-  }
-  async function publishPost() {
-    const body=$("postText").value.trim(); if(!body){notice("postMessage","Write something before publishing.");return;}
-    $("publishBtn").disabled=true; notice("postMessage","Publishing…");
-    const {error}=await db.from("posts").insert({author_id:user.id,body,audience:$("postAudience").value});
-    $("publishBtn").disabled=false;
-    if(error){notice("postMessage",error.message);return;}
-    $("postText").value="";notice("postMessage","Your post is live.",true);await loadFeed();
-  }
-  async function saveProfile(e) {
-    e.preventDefault(); const display_name=$("profileName").value.trim();
-    const username=$("profileUsername").value.trim().toLowerCase().replace(/^@/,"");
-    if(!/^[a-z0-9_]{3,24}$/.test(username)){notice("profileMessage","Username must be 3–24 characters: letters, numbers, and underscores.");return;}
-    notice("profileMessage","Saving…");
-    const changes={display_name,username,bio:$("profileBio").value.trim(),profile_visibility:$("profileVisibility").value,updated_at:new Date().toISOString()};
-    const {error}=await db.from("profiles").update(changes).eq("id",user.id);
-    if(error){notice("profileMessage",error.code==="23505"?"That username is already taken.":error.message);return;}
-    profile={...profile,...changes};await loadProfile();notice("profileMessage","Profile saved.",true);toast("Profile updated");
-  }
-  async function handleFeedClick(e) {
-    const btn=e.target.closest("[data-action]"); if(!btn)return;
-    const id=btn.dataset.id, action=btn.dataset.action;
-    if(action==="comments"){ $("comments-"+id).classList.toggle("hidden");return; }
-    if(action==="like"){
-      btn.disabled=true;
-      const {data:existing}=await db.from("post_likes").select("post_id").eq("post_id",id).eq("user_id",user.id).maybeSingle();
-      const result=existing?await db.from("post_likes").delete().eq("post_id",id).eq("user_id",user.id):await db.from("post_likes").insert({post_id:id,user_id:user.id});
-      if(result.error)toast(result.error.message);else await loadFeed();
-    }
-  }
-  async function handleComment(e) {
-    const form=e.target.closest("form[data-comment]");if(!form)return;e.preventDefault();
-    const post_id=form.dataset.comment, body=new FormData(form).get("body").toString().trim();if(!body)return;
-    const {error}=await db.from("comments").insert({post_id,author_id:user.id,body});
-    if(error){toast(error.message);return;}await loadFeed();$("comments-"+post_id)?.classList.remove("hidden");
-  }
-  function navigate(view) {
-    activeView=view;
-    $("feedView").classList.toggle("hidden",view!=="feed");
-    $("profileView").classList.toggle("hidden",view!=="profile");
-    document.querySelectorAll("[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
-    if(view==="feed")loadFeed();
-  }
-  async function logout(){await db.auth.signOut();user=null;profile=null;showScreen(false);setAuthMode(false);}
-  $("loginForm").addEventListener("submit",handleLogin);
-  $("signupForm").addEventListener("submit",handleSignup);
-  $("publishBtn").addEventListener("click",publishPost);
-  $("profileForm").addEventListener("submit",saveProfile);
-  $("refreshBtn").addEventListener("click",loadFeed);
-  $("logoutBtn").addEventListener("click",logout);$("sideLogout").addEventListener("click",logout);
-  document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
-  $("feedList").addEventListener("click",handleFeedClick);$("feedList").addEventListener("submit",handleComment);
-  db.auth.getSession().then(({data})=>{user=data.session?.user||null;if(user)loadApp();else{showScreen(false);setAuthMode(false);}});
-  db.auth.onAuthStateChange((_event,session)=>{if(session?.user&&!user){user=session.user;loadApp();}else if(!session){user=null;profile=null;showScreen(false);}});
+  async function publish(){const body=$("postText").value.trim();if(!body&&!selectedImage){msg("postMessage","Write something or choose a photo.");return;}const b=$("publishBtn");b.disabled=true;msg("postMessage","Publishing…");try{let media_url=null;if(selectedImage){const ext=selectedImage.name.split(".").pop().toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg",path=user.id+"/"+crypto.randomUUID()+"."+ext;const up=await db.storage.from("zapp-media").upload(path,selectedImage,{upsert:false,contentType:selectedImage.type});if(up.error)throw up.error;media_url=db.storage.from("zapp-media").getPublicUrl(path).data.publicUrl;}const {error}=await db.from("posts").insert({author_id:user.id,body:body||" ",audience:$("postAudience").value,media_url});if(error)throw error;$("postText").value="";$("postImage").value="";$("imagePreview").classList.add("hidden");selectedImage=null;msg("postMessage","Your post is published.",true);await loadFeed();}catch(e){msg("postMessage",e.message||"Could not publish post.");}finally{b.disabled=false;}}
+  async function feedAction(e){const btn=e.target.closest("[data-action]");if(!btn)return;const id=btn.dataset.id;if(btn.dataset.action==="comment"){btn.closest(".post-card").querySelector(".comment-form input")?.focus();return;}btn.disabled=true;const {data:old}=await db.from("post_likes").select("post_id").eq("post_id",id).eq("user_id",user.id).maybeSingle();const r=old?await db.from("post_likes").delete().eq("post_id",id).eq("user_id",user.id):await db.from("post_likes").insert({post_id:id,user_id:user.id});if(r.error)toast(r.error.message);else await loadFeed();}
+  async function commentSubmit(e){const f=e.target.closest("form[data-comment]");if(!f)return;e.preventDefault();const body=new FormData(f).get("body").toString().trim();if(!body)return;const {error}=await db.from("comments").insert({post_id:f.dataset.comment,author_id:user.id,body});if(error)toast(error.message);else await loadFeed();}
+  async function searchPeople(){const term=$("peopleSearch").value.trim().replace(/^@/,"");if(term.length<2){$("peopleResults").textContent="Enter at least 2 characters.";return;}const {data,error}=await db.from("profiles").select("id,username,display_name,bio").neq("id",user.id).or("username.ilike.%"+term+"%,display_name.ilike.%"+term+"%").limit(20);if(error){$("peopleResults").textContent=error.message;return;}if(!data.length){$("peopleResults").textContent="No people found.";return;}const {data:sent}=await db.from("friend_requests").select("receiver_id,status").eq("sender_id",user.id);const {data:received}=await db.from("friend_requests").select("sender_id,status").eq("receiver_id",user.id);$("peopleResults").innerHTML=data.map(p=>{const s=(sent||[]).find(x=>x.receiver_id===p.id),r=(received||[]).find(x=>x.sender_id===p.id);const label=s?.status==="accepted"||r?.status==="accepted"?"Friends":s?.status==="pending"?"Request sent":r?.status==="pending"?"Respond to request":"Add friend";return '<div class="person-row"><div class="avatar">'+esc(initial(p.display_name))+'</div><div><b>'+esc(p.display_name)+'</b><small>@'+esc(p.username||"member")+'</small></div><button class="small-btn" data-person="'+p.id+'" '+(label!=="Add friend"?"disabled":"")+'>'+label+'</button></div>';}).join("");}
+  async function addFriend(e){const b=e.target.closest("[data-person]");if(!b)return;b.disabled=true;const {error}=await db.from("friend_requests").insert({sender_id:user.id,receiver_id:b.dataset.person});if(error)toast(error.code==="23505"?"A request already exists.":error.message);else{b.textContent="Request sent";toast("Friend request sent");}}
+  async function loadFriends(){const [reqR,friendR]=await Promise.all([db.from("friend_requests").select("id,sender_id,created_at").eq("receiver_id",user.id).eq("status","pending").order("created_at",{ascending:false}),db.from("friend_requests").select("sender_id,receiver_id").or("sender_id.eq."+user.id+",receiver_id.eq."+user.id).eq("status","accepted")]);const requests=reqR.data||[],accepted=friendR.data||[];const requestIds=requests.map(r=>r.sender_id),friendIds=accepted.map(r=>r.sender_id===user.id?r.receiver_id:r.sender_id),ids=[...new Set([...requestIds,...friendIds])];let people={};if(ids.length){const r=await db.from("profiles").select("id,display_name,username").in("id",ids);people=Object.fromEntries((r.data||[]).map(p=>[p.id,p]));}$("requestsList").innerHTML=requests.length?requests.map(r=>'<div class="request-row"><div class="avatar">'+esc(initial(people[r.sender_id]?.display_name))+'</div><div><b>'+esc(people[r.sender_id]?.display_name||"Member")+'</b><small>@'+esc(people[r.sender_id]?.username||"member")+'</small></div><button class="small-btn accept" data-accept="'+r.id+'">Accept</button><button class="small-btn" data-decline="'+r.id+'">Decline</button></div>').join():"No pending friend requests.";$("friendsList").innerHTML=friendIds.length?friendIds.map(id=>'<div class="person-row"><div class="avatar">'+esc(initial(people[id]?.display_name))+'</div><div><b>'+esc(people[id]?.display_name||"Member")+'</b><small>@'+esc(people[id]?.username||"member")+'</small></div><button class="small-btn" data-chat-user="'+esc(people[id]?.username||"")+'">Message</button></div>').join():"No friends yet. Search for people above.";}
+  async function friendAction(e){const accept=e.target.closest("[data-accept]"),decline=e.target.closest("[data-decline]");if(!accept&&!decline)return;const id=(accept||decline).dataset.accept||(accept||decline).dataset.decline;const {data:req}=await db.from("friend_requests").select("sender_id,receiver_id").eq("id",id).single();const {error}=await db.from("friend_requests").update({status:accept?"accepted":"declined"}).eq("id",id);if(error){toast(error.message);return;}if(accept&&req){const f=await db.from("follows").insert([{follower_id:user.id,following_id:req.sender_id,status:"accepted"},{follower_id:req.sender_id,following_id:user.id,status:"accepted"}]);if(f.error&&f.error.code!=="23505")toast(f.error.message);}await loadFriends();toast(accept?"Friend added":"Request declined");}
+  async function loadNotifications(){const {data,error}=await db.from("notifications").select("id,actor_id,kind,message,created_at,is_read").eq("user_id",user.id).order("created_at",{ascending:false}).limit(50);if(error){$("notificationsList").textContent=error.message;return;}const rows=data||[];$("notificationDot").classList.toggle("hidden",!rows.some(n=>!n.is_read));if(!rows.length){$("notificationsList").textContent="You're all caught up.";return;}const ids=[...new Set(rows.map(n=>n.actor_id).filter(Boolean))];let names={};if(ids.length){const r=await db.from("profiles").select("id,display_name").in("id",ids);names=Object.fromEntries((r.data||[]).map(p=>[p.id,p.display_name]));}$("notificationsList").innerHTML=rows.map(n=>'<div class="notification-row '+(!n.is_read?"unread":"")+'"><div class="avatar">'+esc(initial(names[n.actor_id]))+'</div><div><b>'+esc(names[n.actor_id]||"Z'app member")+'</b> '+esc(n.message)+'<small>'+esc(new Date(n.created_at).toLocaleString())+'</small></div></div>').join("");await db.from("notifications").update({is_read:true}).eq("user_id",user.id).eq("is_read",false);}
+  async function openChat(username){const clean=username.trim().replace(/^@/,"");if(!clean){msg("chatNotice","Enter a friend's username.");return;}const {data:person,error}=await db.from("profiles").select("id,username,display_name").eq("username",clean).maybeSingle();if(error||!person){msg("chatNotice","We couldn't find that username.");return;}const {data:friendship}=await db.from("friend_requests").select("id").eq("status","accepted").or("and(sender_id.eq."+user.id+",receiver_id.eq."+person.id+"),and(sender_id.eq."+person.id+",receiver_id.eq."+user.id+")").maybeSingle();if(!friendship){msg("chatNotice","You can message people after they accept your friend request.");return;}chatUser=person;$("chatArea").classList.remove("hidden");$("chatTitle").textContent=person.display_name+" (@"+person.username+")";msg("chatNotice","");await loadChat();}
+  async function loadChat(){if(!chatUser)return;const {data,error}=await db.from("messages").select("id,sender_id,receiver_id,body,created_at").or("and(sender_id.eq."+user.id+",receiver_id.eq."+chatUser.id+"),and(sender_id.eq."+chatUser.id+",receiver_id.eq."+user.id+")").order("created_at",{ascending:true}).limit(100);if(error){$("chatMessages").textContent=error.message;return;}$("chatMessages").innerHTML=(data||[]).map(m=>'<div class="bubble '+(m.sender_id===user.id?"mine":"")+'">'+esc(m.body)+'<small>'+esc(new Date(m.created_at).toLocaleTimeString())+'</small></div>').join("");$("chatMessages").scrollTop=$("chatMessages").scrollHeight;await db.from("messages").update({read_at:new Date().toISOString()}).eq("receiver_id",user.id).eq("sender_id",chatUser.id).is("read_at",null);}
+  async function sendMessage(e){e.preventDefault();if(!chatUser)return;const body=$("messageText").value.trim();if(!body)return;const {error}=await db.from("messages").insert({sender_id:user.id,receiver_id:chatUser.id,body});if(error){toast(error.message);return;}$("messageText").value="";await loadChat();}
+  async function saveProfile(e){e.preventDefault();const username=$("profileUsername").value.trim().toLowerCase().replace(/^@/,"");if(!/^[a-z0-9_]{3,24}$/.test(username)){msg("profileMessage","Username must be 3–24 letters, numbers or underscores.");return;}const changes={display_name:$("profileName").value.trim(),username,bio:$("profileBio").value.trim(),profile_visibility:$("profileVisibility").value,updated_at:new Date().toISOString()};const {error}=await db.from("profiles").update(changes).eq("id",user.id);if(error){msg("profileMessage",error.code==="23505"?"That username is already taken.":error.message);return;}profile={...profile,...changes};setIdentity();msg("profileMessage","Profile saved.",true);toast("Profile updated");}
+  async function navigate(view){document.querySelectorAll(".view").forEach(v=>v.classList.add("hidden"));$(view+"View").classList.remove("hidden");document.querySelectorAll("[data-nav]").forEach(b=>b.classList.toggle("selected",b.dataset.nav===view));if(view==="home")await loadFeed();if(view==="friends")await loadFriends();if(view==="notifications")await loadNotifications();if(view==="profile")await loadFeed("myPosts",true);}
+  async function logout(){await db.auth.signOut();user=null;profile=null;chatUser=null;screen(false);setAuthMode(false);}
+  $("switchAuth").addEventListener("click",()=>setAuthMode($("signupForm").classList.contains("hidden")));
+  if(!window.supabase?.createClient){msg("authMessage","Sign-in service could not load. Refresh the page.");return;}
+  db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  $("loginForm").addEventListener("submit",async e=>{e.preventDefault();msg("authMessage","Logging in…");const {data,error}=await db.auth.signInWithPassword({email:$("loginEmail").value.trim(),password:$("loginPassword").value});if(error){msg("authMessage",error.message);return;}user=data.user;await start();});
+  $("signupForm").addEventListener("submit",async e=>{e.preventDefault();const b=$("signupForm").querySelector("button");b.disabled=true;msg("authMessage","Creating account…");try{const {data,error}=await db.auth.signUp({email:$("signupEmail").value.trim(),password:$("signupPassword").value,options:{data:{display_name:$("signupName").value.trim()}}});if(error)throw error;if(data.session){user=data.user;await start();}else msg("authMessage","Account created. Check your email if confirmation is enabled, then log in.",true);}catch(err){msg("authMessage",err.message||"Could not create account.");}finally{b.disabled=false;}});
+  $("publishBtn").addEventListener("click",publish);$("feedList").addEventListener("click",feedAction);$("feedList").addEventListener("submit",commentSubmit);$("myPosts").addEventListener("click",feedAction);$("myPosts").addEventListener("submit",commentSubmit);
+  $("postImage").addEventListener("change",e=>{selectedImage=e.target.files[0]||null;const box=$("imagePreview");box.innerHTML="";if(selectedImage){const img=document.createElement("img");img.src=URL.createObjectURL(selectedImage);box.append(img);box.classList.remove("hidden");}else box.classList.add("hidden");});
+  $("profileForm").addEventListener("submit",saveProfile);$("logoutBtn").addEventListener("click",logout);
+  document.querySelectorAll("[data-nav]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.nav)));
+  $("searchBtn").addEventListener("click",()=>{$("peopleSearch").value=$("globalSearch").value;navigate("friends").then(searchPeople);});
+  $("globalSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){$("peopleSearch").value=e.target.value;navigate("friends").then(searchPeople);}});
+  $("peopleSearchBtn").addEventListener("click",searchPeople);$("peopleResults").addEventListener("click",addFriend);
+  $("friendsView").addEventListener("click",e=>{const c=e.target.closest("[data-chat-user]");if(c){$("messageUser").value=c.dataset.chatUser;navigate("messages").then(()=>openChat(c.dataset.chatUser));}friendAction(e);});
+  $("openChatBtn").addEventListener("click",()=>openChat($("messageUser").value));$("messageForm").addEventListener("submit",sendMessage);
+  db.auth.getSession().then(({data})=>{user=data.session?.user||null;if(user)start();else screen(false);});
+  db.auth.onAuthStateChange((_event,session)=>{if(session?.user&&!user){user=session.user;start();}else if(!session&&user){user=null;profile=null;screen(false);}});
+  async function start(){screen(true);try{await loadProfile();await navigate("home");}catch(e){toast(e.message||"Could not load account.");}}
 })();
