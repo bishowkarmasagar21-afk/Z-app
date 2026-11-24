@@ -85,6 +85,10 @@ async function navigate(view){document.querySelectorAll(".view").forEach(v=>v.cl
   $("postImage").addEventListener("change",e=>{selectedImage=e.target.files[0]||null;const box=$("imagePreview");box.innerHTML="";if(selectedImage){const img=document.createElement("img");img.src=URL.createObjectURL(selectedImage);box.append(img);box.classList.remove("hidden");}else box.classList.add("hidden");});
   $("profileForm").addEventListener("submit",saveProfile);$("logoutBtn").addEventListener("click",logout);
   document.querySelectorAll("[data-nav]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.nav)));
+  $("moreNavToggle").addEventListener("click",()=>{const menu=$("moreNavMenu"),open=menu.classList.toggle("hidden")===false;$("moreNavToggle").setAttribute("aria-expanded",String(open));});
+  $("moreNavMenu").addEventListener("click",e=>{if(e.target.closest("[data-nav]")){$("moreNavMenu").classList.add("hidden");$("moreNavToggle").setAttribute("aria-expanded","false");}});
+  document.addEventListener("click",e=>{if(!e.target.closest(".more-nav-wrap")){$("moreNavMenu").classList.add("hidden");$("moreNavToggle").setAttribute("aria-expanded","false");}});
+
   $("searchBtn").addEventListener("click",()=>{$("peopleSearch").value=$("globalSearch").value;navigate("friends").then(searchPeople);});
   $("globalSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){$("peopleSearch").value=e.target.value;navigate("friends").then(searchPeople);}});
   $("peopleSearchBtn").addEventListener("click",searchPeople);$("peopleResults").addEventListener("click",addFriend);
