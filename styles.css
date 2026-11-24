@@ -82,3 +82,11 @@ body[data-theme="black-ocean"] .theme-choice{background:#1b2229;color:#fff}
 .post-actions{flex-wrap:wrap}
 .post-actions button{flex:1 1 30%;min-width:78px}
 @media(max-width:700px){.reels-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reel-card{padding:8px}}
+
+.more-nav-wrap{position:relative;flex:0 0 auto}
+.more-nav-toggle{font-size:25px!important;letter-spacing:1px}
+.more-nav-menu{position:absolute;right:0;top:calc(100% + 7px);z-index:150;min-width:190px;padding:7px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.28);display:grid;gap:3px}
+.more-nav-menu.hidden{display:none}
+.more-nav-menu .nav-link{width:100%;justify-content:flex-start;min-height:42px;padding:10px 12px;font-size:15px;gap:10px;border-radius:8px}
+.more-nav-menu .nav-link span{display:inline!important;font-size:14px}
+@media(max-width:700px){.left-sidebar nav{align-items:center;justify-content:space-between;overflow:visible}.more-nav-wrap{flex:0 0 48px}.more-nav-wrap>.nav-link{width:48px;height:48px}.more-nav-menu{right:0;top:auto;bottom:calc(100% + 8px);min-width:190px}.more-nav-menu .nav-link{flex:initial;height:auto;min-height:42px}}
