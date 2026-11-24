@@ -16,6 +16,7 @@
     let q=db.from("posts").select("id,author_id,body,audience,media_url,created_at").order("created_at",{ascending:false}).limit(50);
     if(own)q=q.eq("author_id",user.id);
     const {data:posts,error}=await q;if(error){el.textContent="Could not load posts: "+error.message;return;}
+    if(posts?.length){const {data:friendRows,error:friendError}=await db.from("friend_requests").select("sender_id,receiver_id").eq("status","accepted").or("sender_id.eq."+user.id+",receiver_id.eq."+user.id);if(friendError){el.textContent="Could not load your friends: "+friendError.message;return;}const friendIds=new Set((friendRows||[]).map(r=>r.sender_id===user.id?r.receiver_id:r.sender_id));friendIds.add(user.id);posts.sort((a,b)=>{const aFriend=friendIds.has(a.author_id),bFriend=friendIds.has(b.author_id);return aFriend===bFriend?new Date(b.created_at)-new Date(a.created_at):(aFriend?-1:1);});}
     if(!posts?.length){el.innerHTML='<div class="panel empty">No posts here yet. Share the first moment.</div>';return;}
     const ids=[...new Set(posts.map(p=>p.author_id))],postIds=posts.map(p=>p.id);
     const [peopleR,likesR,commentsR]=await Promise.all([
