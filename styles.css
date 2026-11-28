@@ -106,3 +106,5 @@ body[data-theme="matte-black"] .more-nav-menu .nav-link:hover{background:#333}
  .left-sidebar .more-nav-menu .nav-link span{display:inline!important;font-size:14px!important}
 }
 .more-nav-menu .logout.hidden{display:none!important}
+
+.interest-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.interest-tag{display:inline-block;border-radius:14px;padding:3px 8px;background:var(--soft, #e8f1fa);color:var(--text);font-size:11px}.person-row>div:nth-child(2){overflow-wrap:anywhere}
